@@ -1,18 +1,27 @@
 var reader = new FileReader();
-var fileByteArray = [];
+var memory = [];
 var input = document.getElementById('your-rom');
 
-input.onchange = function()
-{
+input.onchange = function() {
 	var file = input.files[0];
 	reader.readAsArrayBuffer(file);
 }
 
 reader.onloadend = function (evt) {
-	//if (evt.target.readyState == FileReader.DONE) {
-		var arrayBuffer = evt.target.result;
-		var array = new Uint8Array(arrayBuffer);
+		memory = new Uint8Array(evt.target.result);
 
-		console.log(array);
-	//}
+		console.log(memory);
+		document.querySelector('#result').innerHTML = readGameName();
+}
+
+function readGameName() {
+	var gameTitle = "";
+
+	for (var i = 0x134; i < 0x144; i++) {
+		gameTitle += String.fromCharCode(memory[i]);
+	}
+
+	console.log(gameTitle);
+
+	return gameTitle;
 }

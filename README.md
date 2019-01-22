@@ -1,3 +1,3 @@
-# gameboyJS
+# Dart Gameboy
 
-A work in progress Javascript implementation of a Gameboy emulator.
+A work in progress Dart implementation of a Gameboy emulator.

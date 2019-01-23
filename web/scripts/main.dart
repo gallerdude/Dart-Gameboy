@@ -23,9 +23,9 @@ void main()
 		memory = new MemoryMap(Uint8List.fromList(reader.result));
 
 		document.querySelector('#title').setInnerHtml(memory.gameName);
-		document.querySelector('#mapper').setInnerHtml(memory.mapperType);
-		document.querySelector('#rom-banks').setInnerHtml("ROM:" + memory.romSize);
-		document.querySelector('#ram-banks').setInnerHtml("RAM:" + memory.ramSize);
+		document.querySelector('#mapper').setInnerHtml(memory.mapper);
+		document.querySelector('#rom-banks').setInnerHtml("ROM:" + (memory.romSize*8).toString() + "K");
+		document.querySelector('#ram-banks').setInnerHtml("RAM:" + (memory.ramSize*8).toString() + "K");
 		startupsequence();
 
 	});

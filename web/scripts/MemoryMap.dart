@@ -4,22 +4,33 @@ class MemoryMap
 {
   Uint8List memory;
   List<Uint8List> romBanks;
+  List<Uint8List> ramBanks;
 
   Uint8List romBank1;
   Uint8List romBank2;
 
+  Uint8List ramBank1;
+  Uint8List ramBank2;
+
   String gameName;
-  String mapperType;
-  String romSize;
-  String ramSize;
+  String mapper;
+
+  int romSize;
+  int ramSize;
 
   MemoryMap(Uint8List cart)
   {
     Uint8List thisROMBank = new Uint8List(0x4000);
     int j = 0;
 
-    romBanks = new List(0x4FF);
-    memory = new Uint8List(0x4FFFFF);
+    this.gameName = getGameName(cart.sublist(0x134, 0x144));
+    this.mapper  = getMapperType(cart[0x147]);
+    this.romSize = getROMSize(cart[0x148]);
+    this.ramSize = getRAMSize(cart[0x149]);
+
+    romBanks = new List(this.romSize);
+    ramBanks = new List(this.ramSize);
+    memory   = new Uint8List(0x4FFFFF);
 
     for (int i = 0; i < cart.length; i++)
     {
@@ -28,18 +39,33 @@ class MemoryMap
       if (i > 0 && i % 0x3FFF == 0)
       {
         romBanks[j] = thisROMBank;
+
         j++;
+        if (mapper == "MBC1" && (j == 0x20 || j == 0x40 || j == 0x60))
+        {
+          j++;
+        }
+
         thisROMBank = new Uint8List(0x4000);
       }
+    }
+
+    for (int i = 0; i < this.ramSize; i++)
+    {
+      this.ramBanks.add(new Uint8List(0x1FFF));
     }
 
     this.romBank1 = romBanks[0];
     this.romBank2 = romBanks[1];
 
-    this.gameName = getGameName();
-    this.mapperType = getMapperType();
-    this.romSize = getROMSize();
-    this.ramSize = getRAMSize();
+    this.ramBank1 = ramBanks[0];
+    this.ramBank2 = ramBanks[1];
+
+
+    print(romBanks);
+    print(ramBanks);
+
+
   }
 
   int read(int address)
@@ -47,55 +73,55 @@ class MemoryMap
     return address;
   }
 
-  String getGameName()
+  String getGameName(Uint8List titlecodes)
   {
   	String gameTitle = "";
 
-  	for (int i = 0x134; i < 0x144; i++)
+  	for (int i = 0; i < titlecodes.length; i++)
   	{
-  		gameTitle += String.fromCharCode(this.memory[i]);
+  		gameTitle += String.fromCharCode(titlecodes[i]);
   	}
 
   	return gameTitle;
   }
 
-  String getMapperType()
+  String getMapperType(int mem)
   {
     String result;
-    switch (memory[0x147])
+    switch (mem)
     {
       case 0x00:
-        result = "ROM only";
+        result = "ROM";
         break;
       case 0x01:
         result = "MBC1";
         break;
       case 0x02:
-        result = "MBC1+RAM";
+        result = "MBC1";
         break;
       case 0x03:
-        result = "MBC1+RAM+Battery";
+        result = "MBC1";
         break;
       case 0x05:
         result = "MBC2";
         break;
       case 0x06:
-        result = "MBC2+BATTERY";
+        result = "MBC2";
         break;
       case 0x07:
-        result = "ROM+RAM";
+        result = "ROM";
         break;
       case 0x10:
-        result = "MBC3+TIMER+RAM+BATTERY";
+        result = "MBC3";
         break;
       case 0x011:
         result = "MBC3";
         break;
       case 0x012:
-        result = "MBC3+RAM";
+        result = "MBC3";
         break;
       case 0x013:
-        result = "MBC3+RAM+BATTERY";
+        result = "MBC3";
         break;
       case 0x019:
         result = "MBC5";
@@ -115,31 +141,34 @@ class MemoryMap
     return result;
   }
 
-  String getROMSize()
+  int getROMSize(int mem)
   {
-    String result;
-    switch (memory[0x148])
+    int result;
+    switch (mem)
     {
       case 0x00:
-        result = "32KByte";
+        result = 2;
         break;
       case 0x01:
-        result = "64KByte";
+        result = 4;
         break;
       case 0x02:
-        result = "128KByte";
+        result = 8;
         break;
       case 0x03:
-        result = "256KByte";
+        result = 16;
         break;
       case 0x04:
-        result = "512KByte";
+        result = 32;
         break;
       case 0x05:
-        result = "1MByte";
+        result = 64;
         break;
       case 0x06:
-        result = "2MByte";
+        result = 128;
+        break;
+      case 0x07:
+        result = 256;
         break;
 
     }
@@ -147,28 +176,28 @@ class MemoryMap
     return result;
   }
 
-  String getRAMSize()
+  int getRAMSize(int mem)
   {
-    String result;
-    switch (memory[0x148])
+    int result;
+    switch (mem)
     {
       case 0x00:
-        result = "No RAM";
+        result = 0;
         break;
       case 0x01:
-        result = " 2KB RAM";
+        result = 1;
         break;
       case 0x02:
-        result = "8KB RAM";
+        result = 1;
         break;
       case 0x03:
-        result = "32 KBytes (4 banks of 8KBytes each)";
+        result = 4;
         break;
       case 0x04:
-        result = "128 KBytes (16 banks of 8KBytes each)";
+        result = 16;
         break;
       case 0x05:
-        result = "64 KBytes (8 banks of 8KBytes each)";
+        result = 8;
         break;
     }
 

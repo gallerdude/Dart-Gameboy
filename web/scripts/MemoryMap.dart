@@ -3,25 +3,30 @@ import 'dart:typed_data';
 class MemoryMap
 {
   Uint8List memory;
+
   List<Uint8List> romBanks;
   List<Uint8List> ramBanks;
-
-  Uint8List romBank1;
-  Uint8List romBank2;
-
-  Uint8List ramBank1;
-  Uint8List ramBank2;
 
   String gameName;
   String mapper;
 
+  int romBankNumber;
+  int ramBankNumber;
+
   int romSize;
   int ramSize;
+
+  bool mode;
 
   MemoryMap(Uint8List cart)
   {
     Uint8List thisROMBank = new Uint8List(0x4000);
+
+    romBankNumber = 1;
+    ramBankNumber = 0;
     int j = 0;
+
+    mode = false;
 
     this.gameName = getGameName(cart.sublist(0x134, 0x144));
     this.mapper  = getMapperType(cart[0x147]);
@@ -56,31 +61,80 @@ class MemoryMap
       {
         this.ramBanks[i] = new Uint8List(0x1FFF);
       }
-
-      if (ramBanks.length > 0)
-      {
-        this.ramBank1 = ramBanks[0];
-      }
-      if (ramBanks.length > 1)
-      {
-        this.ramBank2 = ramBanks[1];
-      }
     }
-
-
-    this.romBank1 = romBanks[0];
-    this.romBank2 = romBanks[1];
-
-
-    print(romBanks);
-    print(ramBanks);
 
 
   }
 
   int read(int address)
   {
-    return address;
+    if (mapper == "MBC1")
+    {
+      if (address <= 0x3FFF)
+      {
+        print("read " + romBanks[0][address].toString() + " from ROM bank #0 at address " + address.toString());
+        return romBanks[0][address];
+      }
+      else if (address <= 0x7FFF)
+      {
+        print("read " + romBanks[romBankNumber][address-0x4000].toString() + " from ROM bank #" + romBankNumber.toString() + " at address " + (address - 0x4000).toString());
+        return romBanks[romBankNumber][address-0x4000];
+      }
+      else if (address >= 0xA000 && address <= 0xBFFF)
+      {
+        print("read " + ramBanks[ramBankNumber][address - 0xA000].toString() + " from RAM bank #" + ramBankNumber.toString() + " at address " + (address - 0xA000).toString());
+        return ramBanks[ramBankNumber][address - 0xA000];
+      }
+    }
+  }
+
+  void write(int data, int address)
+  {
+    if (mapper == "MBC1")
+    {
+      if (address >= 0x2000 && address <= 0x3FFF) //SET ROM BANK NUMBER
+      {
+        romBankNumber = data & 0x1F;
+
+        if (romBankNumber == 0x00 || romBankNumber == 0x20 || romBankNumber == 0x40 || romBankNumber == 0x60)
+        {
+          romBankNumber++;
+        }
+
+        print("Set ROM bank # to " + romBankNumber.toString());
+      }
+      else if (address >= 0x4000 && address <= 0x5FFF)
+      {
+        if (mode)
+        {
+          ramBankNumber = data & 0x3;
+          print("Set RAM bank to " + romBankNumber.toString());
+        }
+        else
+        {
+          romBankNumber = romBankNumber | (0x60 & (data << 5));
+          print("Set ROM bank to " + romBankNumber.toString());
+        }
+      }
+      else if (address >= 0x6000 && address <= 0x7FFF) //SET HIGH ROM OR RAM BANKS
+      {
+        if ((data & 0x1) == 1)
+        {
+          mode = true;
+          print("Set mode to extended RAM");
+        }
+        if ((data & 0x1) == 0)
+        {
+          mode = false;
+          print("Set mode to extended ROM");
+        }
+      }
+      else if (address >= 0xA000 && address <= 0xBFFF) //WRITE TO RAM
+      {
+        ramBanks[ramBankNumber][address - 0xA000] = data;
+        print("Wrote " + data.toString() + " to RAM bank #" + ramBankNumber.toString() + " at address " + (address - 0xA000).toString());
+      }
+    }
   }
 
   String getGameName(Uint8List titlecodes)

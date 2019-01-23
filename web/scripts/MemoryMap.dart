@@ -1,28 +1,45 @@
 import 'dart:typed_data';
 
-import 'RandomAccessMemoryBank.dart';
-import 'RandomAccessMemoryBank.dart';
-
 class MemoryMap
 {
   Uint8List memory;
-  List<Uint8List> banks;
-  String memoryBankControllerType;
+  List<Uint8List> romBanks;
 
-  MemoryMap()
+  Uint8List romBank1;
+  Uint8List romBank2;
+
+  String gameName;
+  String mapperType;
+  String romSize;
+  String ramSize;
+
+  MemoryMap(Uint8List cart)
   {
+    Uint8List thisROMBank = new Uint8List(0x4000);
+    int j = 0;
+
+    romBanks = new List(0x4FF);
     memory = new Uint8List(0x4FFFFF);
-  }
 
-  void loadCartridge(Uint8List cart)
-  {
     for (int i = 0; i < cart.length; i++)
     {
+      thisROMBank[i%0x4000] = cart[i];
       this.memory[i] = cart[i];
+      if (i > 0 && i % 0x3FFF == 0)
+      {
+        romBanks[j] = thisROMBank;
+        j++;
+        thisROMBank = new Uint8List(0x4000);
+      }
     }
 
-    //print(readGameName());
-    //print(readMapperType());
+    this.romBank1 = romBanks[0];
+    this.romBank2 = romBanks[1];
+
+    this.gameName = getGameName();
+    this.mapperType = getMapperType();
+    this.romSize = getROMSize();
+    this.ramSize = getRAMSize();
   }
 
   int read(int address)
@@ -30,7 +47,7 @@ class MemoryMap
     return address;
   }
 
-  String readGameName()
+  String getGameName()
   {
   	String gameTitle = "";
 
@@ -42,7 +59,7 @@ class MemoryMap
   	return gameTitle;
   }
 
-  String readMapperType()
+  String getMapperType()
   {
     String result;
     switch (memory[0x147])
@@ -98,7 +115,7 @@ class MemoryMap
     return result;
   }
 
-  String readROMSize()
+  String getROMSize()
   {
     String result;
     switch (memory[0x148])
@@ -130,7 +147,7 @@ class MemoryMap
     return result;
   }
 
-  String readRAMSize()
+  String getRAMSize()
   {
     String result;
     switch (memory[0x148])

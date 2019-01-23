@@ -20,14 +20,12 @@ void main()
 	});
 
 	reader.onLoadEnd.listen((e) {
-		memory = new MemoryMap();
-		memory.loadCartridge(Uint8List.fromList(reader.result));
-		memory.readMapperType();
+		memory = new MemoryMap(Uint8List.fromList(reader.result));
 
-		document.querySelector('#title').setInnerHtml(memory.readGameName());
-		document.querySelector('#mapper').setInnerHtml(memory.readMapperType());
-		document.querySelector('#rom-banks').setInnerHtml("ROM:" + memory.readROMSize());
-		document.querySelector('#ram-banks').setInnerHtml("RAM: " + memory.readRAMSize());
+		document.querySelector('#title').setInnerHtml(memory.gameName);
+		document.querySelector('#mapper').setInnerHtml(memory.mapperType);
+		document.querySelector('#rom-banks').setInnerHtml("ROM:" + memory.romSize);
+		document.querySelector('#ram-banks').setInnerHtml("RAM:" + memory.ramSize);
 		startupsequence();
 
 	});

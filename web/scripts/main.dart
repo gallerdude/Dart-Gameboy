@@ -22,8 +22,12 @@ void main()
 	reader.onLoadEnd.listen((e) {
 		memory = new MemoryMap();
 		memory.loadCartridge(Uint8List.fromList(reader.result));
+		memory.readMapperType();
 
-		document.querySelector('#result').setInnerHtml(memory.readGameName());
+		document.querySelector('#title').setInnerHtml(memory.readGameName());
+		document.querySelector('#mapper').setInnerHtml(memory.readMapperType());
+		document.querySelector('#rom-banks').setInnerHtml("ROM:" + memory.readROMSize());
+		document.querySelector('#ram-banks').setInnerHtml("RAM: " + memory.readRAMSize());
 		startupsequence();
 
 	});

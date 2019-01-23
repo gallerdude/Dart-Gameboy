@@ -20,12 +20,12 @@ void main()
 	});
 
 	reader.onLoadEnd.listen((e) {
+		window.console.clear("");
 		memory = new MemoryMap(Uint8List.fromList(reader.result));
-
 		document.querySelector('#title').setInnerHtml(memory.gameName);
 		document.querySelector('#mapper').setInnerHtml(memory.mapper);
-		document.querySelector('#rom-banks').setInnerHtml("ROM:" + (memory.romSize*8).toString() + "K");
-		document.querySelector('#ram-banks').setInnerHtml("RAM:" + (memory.ramSize*8).toString() + "K");
+		document.querySelector('#rom-banks').setInnerHtml("ROM:" + (memory.romSize*0xF).toString() + "K");
+		document.querySelector('#ram-banks').setInnerHtml("RAM:" + (memory.ramSize*0x8).toString() + "K");
 		startupsequence();
 
 	});

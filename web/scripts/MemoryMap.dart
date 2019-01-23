@@ -50,16 +50,26 @@ class MemoryMap
       }
     }
 
-    for (int i = 0; i < this.ramSize; i++)
+    if (!ramBanks.isEmpty)
     {
-      this.ramBanks.add(new Uint8List(0x1FFF));
+      for (int i = 0; i < this.ramSize; i++)
+      {
+        this.ramBanks[i] = new Uint8List(0x1FFF);
+      }
+
+      if (ramBanks.length > 0)
+      {
+        this.ramBank1 = ramBanks[0];
+      }
+      if (ramBanks.length > 1)
+      {
+        this.ramBank2 = ramBanks[1];
+      }
     }
+
 
     this.romBank1 = romBanks[0];
     this.romBank2 = romBanks[1];
-
-    this.ramBank1 = ramBanks[0];
-    this.ramBank2 = ramBanks[1];
 
 
     print(romBanks);

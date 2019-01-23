@@ -1,5 +1,8 @@
 import 'dart:typed_data';
 
+import 'RandomAccessMemoryBank.dart';
+import 'RandomAccessMemoryBank.dart';
+
 class MemoryMap
 {
   Uint8List memory;
@@ -20,6 +23,11 @@ class MemoryMap
 
     //print(readGameName());
     //print(readMapperType());
+  }
+
+  int read(int address)
+  {
+    return address;
   }
 
   String readGameName()
@@ -60,6 +68,9 @@ class MemoryMap
       case 0x07:
         result = "ROM+RAM";
         break;
+      case 0x10:
+        result = "MBC3+TIMER+RAM+BATTERY";
+        break;
       case 0x011:
         result = "MBC3";
         break;
@@ -68,6 +79,18 @@ class MemoryMap
         break;
       case 0x013:
         result = "MBC3+RAM+BATTERY";
+        break;
+      case 0x019:
+        result = "MBC5";
+        break;
+      case 0x01A:
+        result = "MBC5+RAM";
+        break;
+      case 0x01B:
+        result = "MBC5+RAM+Battery";
+        break;
+      case 0x020:
+        result = "MBC6";
         break;
 
     }

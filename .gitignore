@@ -2,3 +2,5 @@ out.js
 out.js.deps
 out.js.map
 .DS_Store
+.gitignore
+

@@ -2,10 +2,16 @@ import 'dart:typed_data';
 
 class MemoryMap
 {
-  Uint8List memory;
 
   List<Uint8List> romBanks;
   List<Uint8List> ramBanks;
+
+  Uint8List videoRAMBank;
+  Uint8List  workRAMBank0;
+  Uint8List  workRAMBank1;
+  Uint8List  oam;
+  Uint8List  ioRegisters;
+  Uint8List  highRAMBank;
 
   String gameName;
   String mapper;
@@ -16,7 +22,7 @@ class MemoryMap
   int romSize;
   int ramSize;
 
-  bool mode;
+  bool _mode;
 
   MemoryMap(Uint8List cart)
   {
@@ -26,21 +32,27 @@ class MemoryMap
     ramBankNumber = 0;
     int j = 0;
 
-    mode = false;
+    _mode = false;
 
-    this.gameName = getGameName(cart.sublist(0x134, 0x144));
-    this.mapper  = getMapperType(cart[0x147]);
-    this.romSize = getROMSize(cart[0x148]);
-    this.ramSize = getRAMSize(cart[0x149]);
+    gameName = getGameName(cart.sublist(0x134, 0x144));
+    mapper  = getMapperType(cart[0x147]);
+    romSize = getROMSize(cart[0x148]);
+    ramSize = getRAMSize(cart[0x149]);
 
     romBanks = new List(this.romSize);
     ramBanks = new List(this.ramSize);
-    memory   = new Uint8List(0x4FFFFF);
+
+    videoRAMBank = new Uint8List(0x2000);
+    workRAMBank0 = new Uint8List(0x1000);
+    workRAMBank1 = new Uint8List(0x1000);
+    oam          = new Uint8List(0x00A0);
+    ioRegisters  = new Uint8List(0x0080);
+    highRAMBank  = new Uint8List(0x0080);
+
 
     for (int i = 0; i < cart.length; i++)
     {
       thisROMBank[i%0x4000] = cart[i];
-      this.memory[i] = cart[i];
       if (i > 0 && i % 0x3FFF == 0)
       {
         romBanks[j] = thisROMBank;
@@ -59,7 +71,7 @@ class MemoryMap
     {
       for (int i = 0; i < this.ramSize; i++)
       {
-        this.ramBanks[i] = new Uint8List(0x1FFF);
+        this.ramBanks[i] = new Uint8List(0x2000);
       }
     }
 
@@ -68,21 +80,70 @@ class MemoryMap
 
   int read(int address)
   {
-    if (mapper == "MBC1")
+    if (address >= 0x8000 && address <= 0x9FFF) //VRAM
     {
-      if (address <= 0x3FFF)
+      return videoRAMBank[address - 0x8000];
+    }
+    else if (address >= 0xC000 && address <= 0xCFFF) //WRAM Bank 0
+    {
+      return workRAMBank0[address - 0xC000];
+    }
+    else if (address >= 0xD000 && address <= 0xDFFF) //WRAM Bank 1
+    {
+      return workRAMBank1[address - 0xD000];
+    }
+    else if (address >= 0xE000 && address <= 0xEFFF) //WRAM Bank 0 Echo Fighter
+    {
+      return workRAMBank0[address - 0xE000];
+    }
+    else if (address >= 0xF000 && address <= 0xFDFF) //WRAM BANK 1 Echo Fighter
+    {
+      return workRAMBank1[address - 0xF000];
+    }
+    else if (address >= 0xFE00 && address <= 0xFE9F) //OAM
+    {
+      return oam[address - 0xFE00];
+    }
+    else if (address >= 0xFEA0 && address <= 0xFEFF) //NOT USABLE
+    {
+      return 0;
+    }
+    else if (address >= 0xFF00 && address <= 0xFF7F) //I/O Registers
+    {
+      return ioRegisters[address - 0xFF00];
+    }
+    else if (address >= 0xFF80 && address <= 0xFFFF) //High RAM (Zero Page)
+    {
+      return highRAMBank[address - 0xFF80];
+    }
+    if (mapper == "ROM")
+    {
+      if (address <= 0x3FFF) //ROM BANK 0
       {
-        print("read " + romBanks[0][address].toString() + " from ROM bank #0 at address " + address.toString());
+        //print("read " + romBanks[0][address].toString() + " from ROM bank #0 at address " + address.toString());
         return romBanks[0][address];
       }
-      else if (address <= 0x7FFF)
+      else if (address >= 0x4000 && address <= 0x7FFF) //ROM BANK 0x1 - 0x7F
       {
-        print("read " + romBanks[romBankNumber][address-0x4000].toString() + " from ROM bank #" + romBankNumber.toString() + " at address " + (address - 0x4000).toString());
+        //print("read " + romBanks[romBankNumber][address-0x4000].toString() + " from ROM bank #" + romBankNumber.toString() + " at relative address " + (address - 0x4000).toString() + ", absolute address" + address.toString());
+        return romBanks[1][address-0x4000];
+      }
+    }
+    else if (mapper == "MBC1")
+    {
+      if (address <= 0x3FFF) //ROM BANK 0
+      {
+        //print("read " + romBanks[0][address].toString() + " from ROM bank #0 at address " + address.toString());
+        return romBanks[0][address];
+      }
+      else if (address >= 0x4000 && address <= 0x7FFF) //ROM BANK 0x1 - 0x7F
+      {
+        //print("read " + romBanks[romBankNumber][address-0x4000].toString() + " from ROM bank #" + romBankNumber.toString() + " at relative address " + (address - 0x4000).toString() + ", absolute address" + address.toString());
         return romBanks[romBankNumber][address-0x4000];
       }
-      else if (address >= 0xA000 && address <= 0xBFFF)
+      else if (address >= 0xA000 && address <= 0xBFFF) //RAM BANK 0x00 - 0x03
       {
-        print("read " + ramBanks[ramBankNumber][address - 0xA000].toString() + " from RAM bank #" + ramBankNumber.toString() + " at address " + (address - 0xA000).toString());
+        //print("read " + ramBanks[ramBankNumber][address - 0xA000].toString() + " from RAM bank #" + ramBankNumber.toString() + " at address " + (address - 0xA000).toString());
         return ramBanks[ramBankNumber][address - 0xA000];
       }
     }
@@ -90,9 +151,40 @@ class MemoryMap
 
   void write(int data, int address)
   {
+    bool wroteToGB = true;
+    bool wroteToCt = true;
+
+    if (address >= 0x8000 && address <= 0x9FFF) //WRITE TO VRAM
+    {
+      videoRAMBank[address - 0x8000] = data;
+    }
+    else if (address >= 0xC000 && address <= 0xCFFF) //WRITE TO WRAM 0
+    {
+      workRAMBank0[address - 0xC000] = data;
+    }
+    else if (address >= 0xD000 && address <= 0xDFFF) //WRITE TO WRAM 0
+    {
+      workRAMBank1[address - 0xD000] = data;
+    }
+    else if (address >= 0xFE00 && address <= 0xFE9F) //WRITE TO OAM
+    {
+      oam[address - 0xFE00] = data;
+    }
+    else if (address >= 0xFF80 && address <= 0xFFFF) //WRITE TO HIGH RAM
+    {
+      highRAMBank[address - 0xFF80] = data;
+    }
+    else
+    {
+      wroteToGB = false;
+    }
     if (mapper == "MBC1")
     {
-      if (address >= 0x2000 && address <= 0x3FFF) //SET ROM BANK NUMBER
+      if (address >= 0 && address <= 0x1FFF)
+      {
+        //print("enabling RAM ;)");
+      }
+      else if (address >= 0x2000 && address <= 0x3FFF) //SET ROM BANK NUMBER
       {
         romBankNumber = data & 0x1F;
 
@@ -101,39 +193,48 @@ class MemoryMap
           romBankNumber++;
         }
 
-        print("Set ROM bank # to " + romBankNumber.toString());
+        //print("Set ROM bank # to " + romBankNumber.toString());
       }
-      else if (address >= 0x4000 && address <= 0x5FFF)
+      else if (address >= 0x4000 && address <= 0x5FFF) //SET RAM BANK NUMBER OR HIGH ROM BANK NUMBER (MODE DEPENDENT)
       {
-        if (mode)
+        if (_mode)
         {
           ramBankNumber = data & 0x3;
-          print("Set RAM bank to " + romBankNumber.toString());
+          //print("Set RAM bank to " + romBankNumber.toString());
         }
         else
         {
           romBankNumber = romBankNumber | (0x60 & (data << 5));
-          print("Set ROM bank to " + romBankNumber.toString());
+          //print("Set ROM bank to " + romBankNumber.toString());
         }
       }
       else if (address >= 0x6000 && address <= 0x7FFF) //SET HIGH ROM OR RAM BANKS
       {
         if ((data & 0x1) == 1)
         {
-          mode = true;
-          print("Set mode to extended RAM");
+          _mode = true;
+          //print("Set _mode to extended RAM");
         }
         if ((data & 0x1) == 0)
         {
-          mode = false;
-          print("Set mode to extended ROM");
+          _mode = false;
+          //print("Set _mode to extended ROM");
         }
       }
-      else if (address >= 0xA000 && address <= 0xBFFF) //WRITE TO RAM
+      else if (address >= 0xA000 && address <= 0xBFFF) //WRITE TO RAM BANKS
       {
         ramBanks[ramBankNumber][address - 0xA000] = data;
-        print("Wrote " + data.toString() + " to RAM bank #" + ramBankNumber.toString() + " at address " + (address - 0xA000).toString());
+        //print("Wrote " + data.toString() + " to RAM bank #" + ramBankNumber.toString() + " at address " + (address - 0xA000).toString());
       }
+      else
+      {
+        wroteToCt = false;
+      }
+    }
+
+    if ((wroteToGB || wroteToCt) == false)
+    {
+      //print("attempted to write to unknown location" + address.toString());
     }
   }
 
@@ -267,4 +368,27 @@ class MemoryMap
 
     return result;
   }
+
+  List<String> readAll()
+  {
+    List<String> memory = [];
+    for (int i = 0; i < 0x10000; i++)
+    {
+      memory.add(i.toString() + " " + read(i).toString());
+      if (i % 0xF == 0)
+      {
+        print(i);
+      }
+    }
+    return memory;
+  }
+
+void writeAll()
+{
+  for (int i = 0; i < 0x10000; i++)
+  {
+    write(3, i);
+  }
+}
+
 }

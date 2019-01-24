@@ -383,12 +383,4 @@ class MemoryMap
     return memory;
   }
 
-void writeAll()
-{
-  for (int i = 0; i < 0x10000; i++)
-  {
-    write(3, i);
-  }
-}
-
 }

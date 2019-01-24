@@ -1,10 +1,15 @@
 import 'dart:html';
 import 'dart:typed_data';
 
-import 'OperationCode.dart';
+import 'OperationCodes.dart';
 import 'MemoryMap.dart';
+import 'Registers.dart';
 
 MemoryMap memory;
+
+Registers register;
+
+OperationCodes instructions;
 
 int program_counter;
 

@@ -2,8 +2,8 @@ class Register
 {
   int value;
 
-  Register(val)
+  Register()
   {
-    this.value = val & 255;
+    this.value = 0;
   }
 }

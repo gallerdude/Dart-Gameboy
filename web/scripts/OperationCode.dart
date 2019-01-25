@@ -1,5 +1,3 @@
-import 'Registers.dart';
-
 class OperationCode
 {
   String operation;
@@ -24,6 +22,11 @@ class OperationCode
     this.affectSFlag = sFlag;
     this.affectHFlag = hFlag;
     this.affectCFlag = cFlag;
+  }
+
+  String getOperation()
+  {
+    return operation;
   }
 
 }

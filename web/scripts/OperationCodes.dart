@@ -1,12 +1,39 @@
 import 'OperationCode.dart';
+import 'MemoryMap.dart';
+import 'ProgramCounter.dart';
+import 'Register.dart';
 
 class OperationCodes
 {
   List<OperationCode> opcodes;
   List<OperationCode> cbcodes;
+  MemoryMap memory;
 
-  OperationCodes()
+  ProgramCounter program_counter;
+
+  Register a;
+  Register b;
+  Register c;
+  Register d;
+  Register e;
+  Register f;
+  Register h;
+  Register l;
+
+  OperationCodes(mem, pc, registers)
   {
+    a = registers[0];
+    b = registers[1];
+    c = registers[2];
+    d = registers[3];
+    e = registers[4];
+    f = registers[5];
+    h = registers[6];
+    l = registers[7];
+
+    memory = mem;
+    program_counter = pc;
+
     opcodes = new List(0xFF);
     cbcodes = new List(0xFF);
 
@@ -43,5 +70,21 @@ class OperationCodes
     opcodes[0x1D] = new OperationCode("DEC", "E", null, 2, 1, 2, 3);
     opcodes[0x1E] = new OperationCode("LD", "E", "d8", 3, 3, 3, 3);
     opcodes[0x1F] = new OperationCode("RRA", null, null, 0, 0, 0, 2);
+  }
+
+  void execute(int byte)
+  {
+    //an opcode has different sections - arithmatic, setting the program_counter
+
+    OperationCode thisInstruction = opcodes[byte];
+    print(byte.toRadixString(16));
+    switch(thisInstruction.getOperation())
+    {
+      case "NOP":
+        print("NOP");
+    }
+    print("Unknown opcode " + byte.toRadixString(16).toString());
+
+    program_counter.set(program_counter.toInt() + 1);
   }
 }

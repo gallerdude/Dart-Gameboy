@@ -1,0 +1,50 @@
+import 'dart:typed_data';
+
+import 'CPU.dart';
+import 'memory/Memory.dart';
+import 'registers/Register.dart';
+import 'registers/ProgramCounter.dart';
+
+class Gameboy
+{
+	CPU cpu;
+	Memory memory;
+
+	List<Register> registers;
+
+	Register a;
+	Register b;
+	Register c;
+	Register d;
+	Register e;
+	Register f;
+	Register h;
+	Register l;
+
+	ProgramCounter program_counter;
+
+	Gameboy(Uint8List fileData)
+	{
+		memory = new Memory(fileData);
+		program_counter = new ProgramCounter(0x100);
+		cpu = new CPU();
+
+		a = new Register();
+		b = new Register();
+		c = new Register();
+		d = new Register();
+		e = new Register();
+		f = new Register();
+		h = new Register();
+		l = new Register();
+
+		registers = [a, b, c, d, e, f, h, l];
+
+
+	}
+
+	void startupsequence()
+	{
+		print("PC: " + program_counter.toString());
+	}
+}

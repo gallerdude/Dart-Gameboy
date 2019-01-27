@@ -1,17 +1,18 @@
 import 'dart:typed_data';
+import 'dart:html';
 
-class MemoryMap
+class Memory
 {
 
   List<Uint8List> romBanks;
   List<Uint8List> ramBanks;
 
   Uint8List videoRAMBank;
-  Uint8List  workRAMBank0;
-  Uint8List  workRAMBank1;
-  Uint8List  oam;
-  Uint8List  ioRegisters;
-  Uint8List  highRAMBank;
+  Uint8List workRAMBank0;
+  Uint8List workRAMBank1;
+  Uint8List oam;
+  Uint8List ioRegisters;
+  Uint8List highRAMBank;
 
   String gameName;
   String mapper;
@@ -24,7 +25,7 @@ class MemoryMap
 
   bool _mode;
 
-  MemoryMap(Uint8List cart)
+  Memory(Uint8List cart)
   {
     Uint8List thisROMBank = new Uint8List(0x4000);
 
@@ -38,6 +39,11 @@ class MemoryMap
     mapper  = getMapperType(cart[0x147]);
     romSize = getROMSize(cart[0x148]);
     ramSize = getRAMSize(cart[0x149]);
+
+    document.querySelector('#title').setInnerHtml(gameName);
+    document.querySelector('#mapper').setInnerHtml(mapper);
+    document.querySelector('#rom-banks').setInnerHtml("ROM:" + (romSize*0xF).toString() + "K");
+    document.querySelector('#ram-banks').setInnerHtml("RAM:" + (ramSize*0x8).toString() + "K");
 
     romBanks = new List(this.romSize);
     ramBanks = new List(this.ramSize);

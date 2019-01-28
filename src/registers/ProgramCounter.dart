@@ -16,6 +16,11 @@ class ProgramCounter
     return value;
   }
 
+  void increment(int i)
+  {
+    value = (value + i) & 0xFFFF;
+  }
+
   int toInt()
   {
     return value;

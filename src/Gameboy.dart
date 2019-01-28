@@ -27,7 +27,6 @@ class Gameboy
 	{
 		memory = new Memory(fileData);
 		program_counter = new ProgramCounter(0x100);
-		cpu = new CPU();
 
 		a = new Register();
 		b = new Register();
@@ -40,6 +39,9 @@ class Gameboy
 
 		registers = [a, b, c, d, e, f, h, l];
 
+		cpu = new CPU(memory, program_counter, registers);
+		cpu.execute();
+		cpu.execute();
 
 	}
 

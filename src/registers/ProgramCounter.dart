@@ -21,6 +21,11 @@ class ProgramCounter
     value = (value + i) & 0xFFFF;
   }
 
+  void decrement(int i)
+  {
+    value = (value - i) & 0xFFFF;
+  }
+
   int toInt()
   {
     return value;

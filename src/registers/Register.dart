@@ -7,6 +7,11 @@ class Register
     this.value = 0;
   }
 
+  Register.int(int i)
+  {
+    this.value = i & 0xFF;
+  }
+
   void set(int i)
   {
     this.value = i & 0xFF;

@@ -9,7 +9,7 @@ class CPU
   ProgramCounter pc;
   List<Register> registers;
 
-  const int totalCycles
+  int totalCycles;
 
   Register a;
 	Register b;
@@ -43,13 +43,14 @@ class CPU
   {
     String rawHexCode = "0x"+memory.read(pc.toInt()).toRadixString(16);
     Map instructionMetadata = opcodes['unprefixed'][rawHexCode];
+    int code = read(pc.toInt());
 
     print(instructionMetadata);
 
-    switch (instruction)
+    switch (code)
     {
       case 0x0:
-        print("nop")
+        print("nop");
         break;
       case 0x3:
         incPair(b, c);
@@ -123,9 +124,202 @@ class CPU
       case 0x3D:
         dec(a);
         break;
+
       case 0x40:
         setRegister(b, b);
         break;
+      case 0x41:
+        setRegister(b, c);
+        break;
+      case 0x42:
+        setRegister(b, d);
+        break;
+      case 0x43:
+        setRegister(b, e);
+        break;
+      case 0x44:
+        setRegister(b, h);
+        break;
+      case 0x45:
+        setRegister(b, l);
+        break;
+      case 0x46:
+        b.set(read(getRegisterPair(h, l)));
+        break;
+      case 0x47:
+        setRegister(b, a);
+        break;
+      case 0x48:
+        setRegister(c, b);
+        break;
+      case 0x49:
+        setRegister(c, c);
+        break;
+      case 0x4A:
+        setRegister(c, d);
+        break;
+      case 0x4B:
+        setRegister(c, e);
+        break;
+      case 0x4C:
+        setRegister(c, h);
+        break;
+      case 0x4D:
+        setRegister(c, l);
+        break;
+      case 0x4E:
+        c.set(read(getRegisterPair(h, l)));
+        break;
+      case 0x4F:
+        setRegister(c, a);
+        break;
+      case 0x50:
+        setRegister(d, b);
+        break;
+      case 0x51:
+        setRegister(d, c);
+        break;
+      case 0x52:
+        setRegister(d, d);
+        break;
+      case 0x53:
+        setRegister(d, e);
+        break;
+      case 0x54:
+        setRegister(d, h);
+        break;
+      case 0x55:
+        setRegister(d, l);
+        break;
+      case 0x56:
+        d.set(read(getRegisterPair(h, l)));
+        break;
+      case 0x57:
+        setRegister(d, a);
+        break;
+      case 0x58:
+        setRegister(e, b);
+        break;
+      case 0x59:
+        setRegister(e, c);
+        break;
+      case 0x5A:
+        setRegister(e, d);
+        break;
+      case 0x5B:
+        setRegister(e, e);
+        break;
+      case 0x5C:
+        setRegister(e, h);
+        break;
+      case 0x5D:
+        setRegister(e, l);
+        break;
+      case 0x5E:
+        e.set(read(getRegisterPair(h, l)));
+        break;
+      case 0x5F:
+        setRegister(e, a);
+        break;
+      case 0x60:
+        setRegister(h, b);
+        break;
+      case 0x61:
+        setRegister(h, c);
+        break;
+      case 0x62:
+        setRegister(h, d);
+        break;
+      case 0x63:
+        setRegister(h, e);
+        break;
+      case 0x64:
+        setRegister(h, h);
+        break;
+      case 0x65:
+        setRegister(h, l);
+        break;
+      case 0x66:
+        h.set(read(getRegisterPair(h, l)));
+        break;
+      case 0x67:
+        setRegister(h, a);
+        break;
+      case 0x68:
+        setRegister(l, b);
+        break;
+      case 0x69:
+        setRegister(l, c);
+        break;
+      case 0x6A:
+        setRegister(l, d);
+        break;
+      case 0x6B:
+        setRegister(l, e);
+        break;
+      case 0x6C:
+        setRegister(l, h);
+        break;
+      case 0x6D:
+        setRegister(l, l);
+        break;
+      case 0x6E:
+        l.set(read(getRegisterPair(h, l)));
+        break;
+      case 0x6F:
+        setRegister(l, a);
+        break;
+      case 0x70:
+        write(b.get(), getRegisterPair(h, l));
+        break;
+      case 0x71:
+        write(c.get(), getRegisterPair(h, l));
+        break;
+      case 0x72:
+        write(d.get(), getRegisterPair(h, l));
+        break;
+      case 0x73:
+        write(e.get(), getRegisterPair(h, l));
+        break;
+      case 0x74:
+        write(h.get(), getRegisterPair(h, l));
+        break;
+      case 0x75:
+        write(l.get(), getRegisterPair(h, l));
+        break;
+
+      case 0x76:
+        print("HALT") //TODO: HALT UNTIL INTERRUPTS
+        break;
+
+      case 0x77:
+        write(a.get(), getRegisterPair(h, l));
+        break;
+      case 0x78:
+        setRegister(a, b);
+        break;
+      case 0x79:
+        setRegister(a, c);
+        break;
+      case 0x7A:
+        setRegister(a, d);
+        break;
+      case 0x7B:
+        setRegister(a, e);
+        break;
+      case 0x7C:
+        setRegister(a, h);
+        break;
+      case 0x7D:
+        setRegister(a, l);
+        break;
+      case 0x7E:
+        a.set(read(getRegisterPair(h, l)));
+        break;
+      case 0x7F:
+        setRegister(a, a);
+        break;
+
       case 0x80:
         addRegisters(a, b);
         break;
@@ -145,11 +339,12 @@ class CPU
         addRegisters(a, l);
         break;
       case 0x86:
-        addRegisters(a, read(getRegisterPair(h, l)));
+        addRegisters(a, new Register.int(read(getRegisterPair(h, l))));
         break;
       case 0x87:
         addRegisters(a, a);
         break;
+
       case 0x90:
         subRegisters(a, b);
         break;
@@ -169,11 +364,12 @@ class CPU
         subRegisters(a, l);
         break;
       case 0x96:
-        subRegisters(a, read(getRegisterPair(h, l)));
+        subRegisters(a, new Register.int(read(getRegisterPair(h, l))));
         break;
       case 0x97:
         subRegisters(a, a);
         break;
+
       case 0xA0:
         andRegisters(a, b);
         break;
@@ -193,11 +389,12 @@ class CPU
         andRegisters(a, l);
         break;
       case 0xA6:
-        andRegisters(a, read(getRegisterPair(h, l)));
+        andRegisters(a, new Register.int(read(getRegisterPair(h, l))));
         break;
       case 0xA7:
         andRegisters(a, a);
         break;
+
       case 0xB0:
         orRegisters(a, b);
         break;
@@ -217,7 +414,7 @@ class CPU
         orRegisters(a, l);
         break;
       case 0xB6:
-        orRegisters(a, read(getRegisterPair(h, l)));
+        orRegisters(a, new Register.int(read(getRegisterPair(h, l))));
         break;
       case 0xB7:
         orRegisters(a, a);
@@ -246,7 +443,7 @@ class CPU
 
   int getRegisterPair(Register r1, Register r2)
   {
-    return (r1.get() << 8) | r2.get()
+    return (r1.get() << 8) | r2.get();
   }
 
   void addRegisters(Register r1, Register r2)
@@ -277,9 +474,9 @@ class CPU
     memory.write(data, address);
   }
 
-  void read(int address)
+  int read(int address)
   {
-    memory.read(address);
+    return memory.read(address);
   }
 
   void inc(Register r)
@@ -289,7 +486,7 @@ class CPU
 
   void incPair(Register r1, Register r2)
   {
-    getRegisterPair(r1, r2, getRegisterPair(r1, r2) + 1);
+    setRegisterPair(r1, r2, getRegisterPair(r1, r2) + 1);
   }
 
   void dec(Register r)
@@ -299,13 +496,13 @@ class CPU
 
   void decPair(Register r1, Register r2)
   {
-    if (r1 > 0)
+    if (r1.get() > 0)
     {
-      r1.dec();
+      dec(r1);
     }
-    else if (r2 > 0)
+    else if (r2.get() > 0)
     {
-      r2.dec();
+      dec(r2);
     }
     else
     {

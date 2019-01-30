@@ -52,6 +52,9 @@ class CPU
       case 0x0:
         print("nop");
         break;
+      case 0x2:
+        write(a.get(), read(getRegisterPair(b, c)));
+        break;
       case 0x3:
         incPair(b, c);
         break;
@@ -60,6 +63,9 @@ class CPU
         break;
       case 0x5:
         dec(b);
+        break;
+      case 0xA:
+        a.set(read(getRegisterPair(b, c)));
         break;
       case 0xB:
         decPair(b, c);
@@ -70,6 +76,9 @@ class CPU
       case 0xD:
         dec(c);
         break;
+      case 0x12:
+        write(a.get(), read(getRegisterPair(d, e)));
+        break;
       case 0x13:
         incPair(d, e);
         break;
@@ -78,6 +87,9 @@ class CPU
         break;
       case 0x15:
         dec(d);
+        break;
+      case 0x1A:
+        a.set(read(getRegisterPair(d, e)));
         break;
       case 0x1B:
         decPair(d, e);
@@ -88,6 +100,9 @@ class CPU
       case 0x1D:
         dec(e);
         break;
+      case 0x22:
+        write(a.get(), read((getRegisterPair(d, e) + 1) & 0xFFFF));
+        break;
       case 0x23:
         incPair(h, l);
         break;
@@ -96,6 +111,9 @@ class CPU
         break;
       case 0x25:
         dec(h);
+        break;
+      case 0x2A:
+        a.set(read(getRegisterPair(h, l)) + 1);
         break;
       case 0x2B:
         decPair(h, l);
@@ -106,14 +124,20 @@ class CPU
       case 0x2D:
         dec(h);
         break;
+      case 0x32:
+        write(a.get(), read((getRegisterPair(d, e) - 1) & 0xFFFF));
+        break;
       case 0x33:
         pc.increment(1);
         break;
       case 0x34:
-        write(getRegisterPair(h, l)+1, read(getRegisterPair(h, l)));
+        write(getRegisterPair(h, l)+1, getRegisterPair(h, l));
         break;
       case 0x35:
-        write(getRegisterPair(h, l)-1, read(getRegisterPair(h, l)));
+        write(getRegisterPair(h, l)-1, getRegisterPair(h, l));
+        break;
+      case 0x3A:
+        a.set(read(getRegisterPair(h, l)) - 1);
         break;
       case 0x3B:
         pc.decrement(1);
@@ -419,9 +443,6 @@ class CPU
       case 0xB7:
         orRegisters(a, a);
         break;
-
-
-
 
 
 

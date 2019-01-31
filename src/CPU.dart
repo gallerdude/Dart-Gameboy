@@ -39,9 +39,9 @@ class CPU
     l = registers[7];
   }
 
-  void execute()
+  void execute(int i)
   {
-    String rawHexCode = "0x"+memory.read(pc.toInt()).toRadixString(16);
+    String rawHexCode = "0x"+memory.read(i).toRadixString(16);
     Map instructionMetadata = opcodes['unprefixed'][rawHexCode];
     int code = read(pc.toInt());
 
@@ -51,6 +51,9 @@ class CPU
     {
       case 0x0:
         print("nop");
+        break;
+      case 0x1:
+        setRegisterPair(b, c, getd16());
         break;
       case 0x2:
         write(a.get(), read(getRegisterPair(b, c)));
@@ -64,6 +67,9 @@ class CPU
       case 0x5:
         dec(b);
         break;
+      case 0x6:
+        b.set(d8());
+        break;
       case 0xA:
         a.set(read(getRegisterPair(b, c)));
         break;
@@ -75,6 +81,12 @@ class CPU
         break;
       case 0xD:
         dec(c);
+        break;
+      case 0xE:
+        c.set(d8());
+        break;
+      case 0x11:
+        setRegisterPair(d, e, getd16());
         break;
       case 0x12:
         write(a.get(), read(getRegisterPair(d, e)));
@@ -88,6 +100,10 @@ class CPU
       case 0x15:
         dec(d);
         break;
+      case 0x16:
+        d.set(d8());
+        break;
+
       case 0x1A:
         a.set(read(getRegisterPair(d, e)));
         break;
@@ -99,6 +115,12 @@ class CPU
         break;
       case 0x1D:
         dec(e);
+        break;
+      case 0x1E:
+        e.set(d8());
+        break;
+      case 0x21:
+        setRegisterPair(h, l, getd16());
         break;
       case 0x22:
         write(a.get(), read((getRegisterPair(d, e) + 1) & 0xFFFF));
@@ -112,6 +134,9 @@ class CPU
       case 0x25:
         dec(h);
         break;
+      case 0x16:
+        h.set(d8());
+        break;
       case 0x2A:
         a.set(read(getRegisterPair(h, l)) + 1);
         break;
@@ -123,6 +148,9 @@ class CPU
         break;
       case 0x2D:
         dec(h);
+        break;
+      case 0x2E:
+        l.set(d8());
         break;
       case 0x32:
         write(a.get(), read((getRegisterPair(d, e) - 1) & 0xFFFF));
@@ -139,14 +167,17 @@ class CPU
       case 0x3A:
         a.set(read(getRegisterPair(h, l)) - 1);
         break;
-      case 0x3B:
-        pc.decrement(1);
-        break;
       case 0x3C:
         inc(a);
         break;
       case 0x3D:
         dec(a);
+        break;
+      case 0x3E:
+        a.set(d8());
+        break;
+      case 0x36:
+        write(d8(), getRegisterPair(h, l));
         break;
 
       case 0x40:
@@ -313,7 +344,7 @@ class CPU
         break;
 
       case 0x76:
-        print("HALT") //TODO: HALT UNTIL INTERRUPTS
+        print("HALT"); //TODO: HALT UNTIL INTERRUPTS
         break;
 
       case 0x77:
@@ -444,6 +475,18 @@ class CPU
         orRegisters(a, a);
         break;
 
+      case 0xE2:
+        write(a.get(), 0xFF00 & c.get());
+        break;
+      case 0xF2:
+        a.set(read(0xFF00 & c.get()));
+        break;
+
+        //TODO 0xFF
+        //TODO SET FLAGS
+        //TODO INCREMENT TIMING
+        //TODO INCREMENT PC
+
 
 
     }
@@ -487,6 +530,16 @@ class CPU
     r1.set(r1.get() | r2.get());
   }
 
+  int d8()
+  {
+    return read(pc.get()+1);
+  }
+
+  int getd16()
+  {
+    return (read(pc.get()+1) << 8) | read(pc.get()+2);
+  }
+
 
 
 
@@ -499,6 +552,7 @@ class CPU
   {
     return memory.read(address);
   }
+
 
   void inc(Register r)
   {

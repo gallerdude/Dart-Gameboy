@@ -40,7 +40,7 @@ class Gameboy
 		registers = [a, b, c, d, e, f, h, l];
 
 		cpu = new CPU(memory, program_counter, registers);
-		cpu.execute(memory.read(program_counter));
+		cpu.execute(memory.read(program_counter.toInt()));
 
 	}
 

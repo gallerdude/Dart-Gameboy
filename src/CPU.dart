@@ -134,7 +134,7 @@ class CPU
       case 0x25:
         dec(h);
         break;
-      case 0x16:
+      case 0x26:
         h.set(d8());
         break;
       case 0x2A:
@@ -175,9 +175,6 @@ class CPU
         break;
       case 0x3E:
         a.set(d8());
-        break;
-      case 0x36:
-        write(d8(), getRegisterPair(h, l));
         break;
 
       case 0x40:
@@ -450,6 +447,31 @@ class CPU
         andRegisters(a, a);
         break;
 
+      case 0xA8:
+        xorRegisters(a, b);
+        break;
+      case 0xA9:
+        xorRegisters(a, c);
+        break;
+      case 0xAA:
+        xorRegisters(a, d);
+        break;
+      case 0xAB:
+        xorRegisters(a, e);
+        break;
+      case 0xAC:
+        xorRegisters(a, h);
+        break;
+      case 0xAD:
+        xorRegisters(a, l);
+        break;
+      case 0xAE:
+        xorRegisters(a, new Register.int(read(getRegisterPair(h, l))));
+        break;
+      case 0xAF:
+        xorRegisters(a, a);
+        break;
+
       case 0xB0:
         orRegisters(a, b);
         break;
@@ -528,6 +550,11 @@ class CPU
   void orRegisters(Register r1, Register r2)
   {
     r1.set(r1.get() | r2.get());
+  }
+
+  void xorRegisters(Register r1, Register r2)
+  {
+    r1.set(r1.get() ^ r2.get());
   }
 
   int d8()

@@ -28,6 +28,7 @@ class CPU
     memory = mem;
     pc = program_counter;
     registers = regs;
+    stack_pointer = 0xFFFE
 
     a = registers[0];
     b = registers[1];
@@ -497,11 +498,54 @@ class CPU
         orRegisters(a, a);
         break;
 
+      case 0xC1:
+        setRegisterPair(b, c, (read(sp+1) << 8) | read(sp+2))
+        sp = sp + 2;
+        break;
+      case 0xC5:
+        write(b.get(),sp);
+        sp--;
+        write(c.get(),sp);
+        sp--;
+        break;
+      case 0xD1:
+        setRegisterPair(d, e, (read(sp+1) << 8) | read(sp+2))
+        sp = sp + 2;
+        break;
+      case 0xD5:
+        write(d.get(),sp);
+        sp--;
+        write(e.get(),sp);
+        sp--;
+        break;
+
+      case 0xE1:
+        setRegisterPair(h, l, (read(sp+1) << 8) | read(sp+2))
+        sp = sp + 2;
+        break;
+
       case 0xE2:
         write(a.get(), 0xFF00 & c.get());
         break;
+      case 0xE5:
+        write(h.get(),sp);
+        sp--;
+        write(l.get(),sp);
+        sp--;
+        break;
+
+      case 0xF1:
+        setRegisterPair(a, f, (read(sp+1) << 8) | read(sp+2))
+        sp = sp + 2;
+        break;
       case 0xF2:
         a.set(read(0xFF00 & c.get()));
+        break;
+      case 0xF5:
+        write(a.get(),sp);
+        sp--;
+        write(f.get(),sp);
+        sp--;
         break;
 
         //TODO 0xFF
@@ -564,7 +608,7 @@ class CPU
 
   int getd16()
   {
-    return (read(pc.get()+1) << 8) | read(pc.get()+2);
+    return (read(pc.get()+2) << 8) | read(pc.get()+1);
   }
 
 

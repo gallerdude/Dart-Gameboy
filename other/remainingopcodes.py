@@ -3,7 +3,6 @@ fref = open("finishedOpcodes.txt", "r")
 x = fref.read().split("\n")
 j = 0
 
-print("DONE")
 for i in range(0,256):
 	if i > 0 and i % 16 == 0:
 			print("")
@@ -16,8 +15,7 @@ for i in range(0,256):
 	else:
 		print("     ", end="")
 
-print("--------------------------"*3+"-")
-print("NOT DONE")
+print("\n\n")
 fref = open("finishedOpcodes.txt", "r")
 x = fref.read().split("\n")
 j = 0

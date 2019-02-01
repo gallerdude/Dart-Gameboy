@@ -69,6 +69,9 @@ class CPU
       case 0x5:
         dec(b);
         break;
+      case 0x9:
+        setRegisterPair(h, l, getRegisterPair(h,l) + getRegisterPair(b, c));
+        break;
       case 0x6:
         b.set(d8());
         break;
@@ -105,7 +108,9 @@ class CPU
       case 0x16:
         d.set(d8());
         break;
-
+      case 0x19:
+        setRegisterPair(h, l, getRegisterPair(h,l) + getRegisterPair(d, e));
+        break;
       case 0x1A:
         a.set(read(getRegisterPair(d, e)));
         break;
@@ -139,6 +144,9 @@ class CPU
       case 0x26:
         h.set(d8());
         break;
+      case 0x29:
+        setRegisterPair(h, l, getRegisterPair(h,l) + getRegisterPair(h, l));
+        break;
       case 0x2A:
         a.set(read(getRegisterPair(h, l)) + 1);
         break;
@@ -154,11 +162,14 @@ class CPU
       case 0x2E:
         l.set(d8());
         break;
+      case 0x31:
+        sp = getd16();
+        break;
       case 0x32:
         write(a.get(), read((getRegisterPair(d, e) - 1) & 0xFFFF));
         break;
       case 0x33:
-        pc.increment(1);
+        sp--;
         break;
       case 0x34:
         write(getRegisterPair(h, l)+1, getRegisterPair(h, l));
@@ -166,8 +177,17 @@ class CPU
       case 0x35:
         write(getRegisterPair(h, l)-1, getRegisterPair(h, l));
         break;
+      case 0x36:
+        write(d8(), getRegisterPair(h, l));
+        break;
+      case 0x39:
+        setRegisterPair(h, l, sp + getRegisterPair(h, l));
+        break;
       case 0x3A:
         a.set(read(getRegisterPair(h, l)) - 1);
+        break;
+      case 0x3B:
+        sp++;
         break;
       case 0x3C:
         inc(a);
@@ -503,6 +523,9 @@ class CPU
         setRegisterPair(b, c, (read(sp+2) << 8) | read(sp+1));
         sp = sp + 2;
         break;
+      case 0xC3:
+        pc.set(getd16());
+        pc.set(pc.get() - instructionMetadata['length']);
       case 0xC5:
         write(b.get(),sp);
         sp--;
@@ -534,7 +557,9 @@ class CPU
         write(l.get(),sp);
         sp--;
         break;
-
+      case 0xEA:
+        write(a.get(), getd16());
+        break;
       case 0xF1:
         setRegisterPair(a, f, (read(sp+2) << 8) | read(sp+1));
         sp = sp + 2;
@@ -557,23 +582,23 @@ class CPU
         //TODO INCREMENT TIMING
         //TODO INCREMENT PC
     }
-    print("a: 0x"+a.get().toRadixString(16));
-    print("b: 0x"+b.get().toRadixString(16));
-    print("c: 0x"+c.get().toRadixString(16));
-    print("d: 0x"+d.get().toRadixString(16));
-    print("e: 0x"+e.get().toRadixString(16));
-    print("f: 0x"+f.get().toRadixString(16));
-    print("h: 0x"+h.get().toRadixString(16));
-    print("l: 0x"+l.get().toRadixString(16));
+    print(" a: 0x"+a.get().toRadixString(16));
+    print(" b: 0x"+b.get().toRadixString(16));
+    print(" c: 0x"+c.get().toRadixString(16));
+    print(" d: 0x"+d.get().toRadixString(16));
+    print(" e: 0x"+e.get().toRadixString(16));
+    print(" f: 0x"+f.get().toRadixString(16));
+    print(" h: 0x"+h.get().toRadixString(16));
+    print(" l: 0x"+l.get().toRadixString(16));
     print("af: 0x"+getRegisterPair(a,f).toRadixString(16));
     print("bc: 0x"+getRegisterPair(b,c).toRadixString(16));
     print("de: 0x"+getRegisterPair(d,e).toRadixString(16));
     print("hl: 0x"+getRegisterPair(h,l).toRadixString(16));
     print("sp: 0x"+sp.toRadixString(16));
-    print("pc pre: 0x"+pc.get().toRadixString(16));
+    print("before pc: 0x"+pc.get().toRadixString(16));
 
     pc.increment(instructionMetadata['length']);
-    print("pc post: 0x"+pc.get().toRadixString(16));
+    print("after  pc: 0x"+pc.get().toRadixString(16));
   }
 
   void setRegister(Register registerI, Register registerO)

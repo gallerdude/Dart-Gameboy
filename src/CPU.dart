@@ -8,6 +8,7 @@ class CPU
   Memory memory;
   ProgramCounter pc;
   List<Register> registers;
+  int sp;
 
   int totalCycles;
 
@@ -28,7 +29,7 @@ class CPU
     memory = mem;
     pc = program_counter;
     registers = regs;
-    stack_pointer = 0xFFFE
+    sp = 0xFFFE;
 
     a = registers[0];
     b = registers[1];
@@ -42,13 +43,13 @@ class CPU
 
   void execute(int i)
   {
-    String rawHexCode = "0x"+memory.read(i).toRadixString(16);
+    String rawHexCode = "0x"+i.toRadixString(16);
     Map instructionMetadata = opcodes['unprefixed'][rawHexCode];
     int code = read(pc.toInt());
 
     print(instructionMetadata);
 
-    switch (code)
+    switch (i)
     {
       case 0x0:
         print("nop");
@@ -499,7 +500,7 @@ class CPU
         break;
 
       case 0xC1:
-        setRegisterPair(b, c, (read(sp+1) << 8) | read(sp+2))
+        setRegisterPair(b, c, (read(sp+2) << 8) | read(sp+1));
         sp = sp + 2;
         break;
       case 0xC5:
@@ -509,7 +510,7 @@ class CPU
         sp--;
         break;
       case 0xD1:
-        setRegisterPair(d, e, (read(sp+1) << 8) | read(sp+2))
+        setRegisterPair(d, e, (read(sp+2) << 8) | read(sp+1));
         sp = sp + 2;
         break;
       case 0xD5:
@@ -520,7 +521,7 @@ class CPU
         break;
 
       case 0xE1:
-        setRegisterPair(h, l, (read(sp+1) << 8) | read(sp+2))
+        setRegisterPair(h, l, (read(sp+2) << 8) | read(sp+1));
         sp = sp + 2;
         break;
 
@@ -535,7 +536,7 @@ class CPU
         break;
 
       case 0xF1:
-        setRegisterPair(a, f, (read(sp+1) << 8) | read(sp+2))
+        setRegisterPair(a, f, (read(sp+2) << 8) | read(sp+1));
         sp = sp + 2;
         break;
       case 0xF2:
@@ -547,17 +548,32 @@ class CPU
         write(f.get(),sp);
         sp--;
         break;
+      case 0xFA:
+        a.set(read(pc.get()+1));
+        break;
 
         //TODO 0xFF
         //TODO SET FLAGS
         //TODO INCREMENT TIMING
         //TODO INCREMENT PC
-
-
-
     }
+    print("a: 0x"+a.get().toRadixString(16));
+    print("b: 0x"+b.get().toRadixString(16));
+    print("c: 0x"+c.get().toRadixString(16));
+    print("d: 0x"+d.get().toRadixString(16));
+    print("e: 0x"+e.get().toRadixString(16));
+    print("f: 0x"+f.get().toRadixString(16));
+    print("h: 0x"+h.get().toRadixString(16));
+    print("l: 0x"+l.get().toRadixString(16));
+    print("af: 0x"+getRegisterPair(a,f).toRadixString(16));
+    print("bc: 0x"+getRegisterPair(b,c).toRadixString(16));
+    print("de: 0x"+getRegisterPair(d,e).toRadixString(16));
+    print("hl: 0x"+getRegisterPair(h,l).toRadixString(16));
+    print("sp: 0x"+sp.toRadixString(16));
+    print("pc pre: 0x"+pc.get().toRadixString(16));
 
     pc.increment(instructionMetadata['length']);
+    print("pc post: 0x"+pc.get().toRadixString(16));
   }
 
   void setRegister(Register registerI, Register registerO)

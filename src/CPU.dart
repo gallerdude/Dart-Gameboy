@@ -1,4 +1,5 @@
 import 'registers/Register.dart';
+import 'registers/FlagRegister.dart';
 import 'registers/ProgramCounter.dart';
 import 'memory/Memory.dart';
 import '../other/opcodes.json';
@@ -17,7 +18,7 @@ class CPU
 	Register c;
 	Register d;
 	Register e;
-	Register f;
+	FlagRegister f;
 	Register h;
 	Register l;
 
@@ -69,11 +70,23 @@ class CPU
       case 0x5:
         dec(b);
         break;
-      case 0x9:
-        setRegisterPair(h, l, getRegisterPair(h,l) + getRegisterPair(b, c));
-        break;
       case 0x6:
         b.set(d8());
+        break;
+      case 0x7:
+        int rot = a.get() << 1;
+        if (f.getC())
+        {
+          rot = rot | 1;
+        }
+        else
+        {
+          rot = rot & 0xfe;
+        }
+        a.set(rot);
+        break;
+      case 0x9:
+        setRegisterPair(h, l, getRegisterPair(h,l) + getRegisterPair(b, c));
         break;
       case 0xA:
         a.set(read(getRegisterPair(b, c)));
@@ -107,6 +120,12 @@ class CPU
         break;
       case 0x16:
         d.set(d8());
+        break;
+      case 0x17:
+        int rot = a.get() << 1;
+        int bit = (rot & 100) >> 8;
+        rot = rot | bit;
+        a.set(rot);
         break;
       case 0x19:
         setRegisterPair(h, l, getRegisterPair(h,l) + getRegisterPair(d, e));
@@ -419,6 +438,32 @@ class CPU
         addRegisters(a, a);
         break;
 
+      case 0x88:
+        adcRegisters(a, b);
+        break;
+      case 0x89:
+        adcRegisters(a, c);
+        break;
+      case 0x8A:
+        adcRegisters(a, d);
+        break;
+      case 0x8B:
+        adcRegisters(a, e);
+        break;
+      case 0x8C:
+        adcRegisters(a, h);
+        break;
+      case 0x8D:
+        adcRegisters(a, l);
+        break;
+      case 0x8E:
+        adcRegisters(a, new Register.int(read(getRegisterPair(h, l))));
+        break;
+      case 0x8F:
+        adcRegisters(a, a);
+        break;
+
+
       case 0x90:
         subRegisters(a, b);
         break;
@@ -443,6 +488,32 @@ class CPU
       case 0x97:
         subRegisters(a, a);
         break;
+
+      case 0x98:
+        sbcRegisters(a, b);
+        break;
+      case 0x99:
+        sbcRegisters(a, c);
+        break;
+      case 0x9A:
+        sbcRegisters(a, d);
+        break;
+      case 0x9B:
+        sbcRegisters(a, e);
+        break;
+      case 0x9C:
+        sbcRegisters(a, h);
+        break;
+      case 0x9D:
+        sbcRegisters(a, l);
+        break;
+      case 0x9E:
+        sbcRegisters(a, new Register.int(read(getRegisterPair(h, l))));
+        break;
+      case 0x9F:
+        sbcRegisters(a, a);
+        break;
+
 
       case 0xA0:
         andRegisters(a, b);
@@ -524,14 +595,18 @@ class CPU
         sp = sp + 2;
         break;
       case 0xC3:
-        pc.set(getd16());
-        pc.set(pc.get() - instructionMetadata['length']);
+        pc.set(getd16() - instructionMetadata['length']);
+        break;
       case 0xC5:
         write(b.get(),sp);
         sp--;
         write(c.get(),sp);
         sp--;
         break;
+      case 0xCA:
+        pc.set(getd16() - instructionMetadata['length']);
+        break;
+
       case 0xD1:
         setRegisterPair(d, e, (read(sp+2) << 8) | read(sp+1));
         sp = sp + 2;
@@ -557,6 +632,10 @@ class CPU
         write(l.get(),sp);
         sp--;
         break;
+      case 0xE9:
+        pc.set(getRegisterPair(h,l) - instructionMetadata['length']);
+        break;
+
       case 0xEA:
         write(a.get(), getd16());
         break;
@@ -622,9 +701,33 @@ class CPU
     r1.set(r1.get() + r2.get());
   }
 
+  void adcRegisters(Register r1, Register r2)
+  {
+    if (f.getC())
+    {
+      r1.set(r1.get() + r2.get() + 1);
+    }
+    else
+    {
+      addRegisters(r1, r2);
+    }
+  }
+
   void subRegisters(Register r1, Register r2)
   {
     r1.set(r1.get() - r2.get());
+  }
+
+  void sbcRegisters(Register r1, Register r2)
+  {
+    if (f.get())
+    {
+      r1.set(r1.get() - r2.get()-1);
+    }
+    else
+    {
+      r1.set(r1.get() - r2.get());
+    }
   }
 
   void andRegisters(Register r1, Register r2)

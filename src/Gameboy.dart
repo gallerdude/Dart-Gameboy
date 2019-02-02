@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'CPU.dart';
 import 'memory/Memory.dart';
 import 'registers/Register.dart';
+import 'registers/FlagRegister.dart';
 import 'registers/ProgramCounter.dart';
 
 class Gameboy
@@ -17,7 +18,7 @@ class Gameboy
 	Register c;
 	Register d;
 	Register e;
-	Register f;
+	FlagRegister f;
 	Register h;
 	Register l;
 
@@ -33,7 +34,7 @@ class Gameboy
 		c = new Register();
 		d = new Register();
 		e = new Register();
-		f = new Register();
+		f = new FlagRegister();
 		h = new Register();
 		l = new Register();
 

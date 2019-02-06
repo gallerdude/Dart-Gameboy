@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'CPU.dart';
+import 'LCD.dart';
 import 'memory/Memory.dart';
 import 'registers/Register.dart';
 import 'registers/FlagRegister.dart';
@@ -9,6 +10,7 @@ import 'registers/ProgramCounter.dart';
 class Gameboy
 {
 	CPU cpu;
+	LCD lcd;
 	Memory memory;
 
 	List<Register> registers;
@@ -27,6 +29,7 @@ class Gameboy
 	Gameboy(Uint8List fileData)
 	{
 		memory = new Memory(fileData);
+		lcd = new LCD(memory);
 		program_counter = new ProgramCounter(0x100);
 
 		a = new Register();
@@ -41,7 +44,6 @@ class Gameboy
 		registers = [a, b, c, d, e, f, h, l];
 
 		cpu = new CPU(memory, program_counter, registers);
-		cpu.execute(memory.read(program_counter.toInt()));
 
 	}
 

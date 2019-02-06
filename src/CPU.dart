@@ -103,6 +103,9 @@ class CPU
       case 0xE:
         c.set(d8());
         break;
+      case 0x10:
+        print("stop");
+        break;
       case 0x11:
         setRegisterPair(d, e, getd16());
         break;
@@ -720,7 +723,7 @@ class CPU
 
   void sbcRegisters(Register r1, Register r2)
   {
-    if (f.get())
+    if (f.getC())
     {
       r1.set(r1.get() - r2.get()-1);
     }

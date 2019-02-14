@@ -242,6 +242,18 @@ class Memory
     {
       //print("attempted to write to unknown location" + address.toString());
     }
+
+    if (address == 0xFF46) //DMA OAM TRANSFER
+    {
+      source = data << 8;
+
+      print("DMA OAM TRANSFER FROM " + source.toString());
+
+      for (int i = 0; i < 0x9F; i++)
+      {
+        write(read(source + i), 0xFE00 + i);
+      }
+    }
   }
 
   String getGameName(Uint8List titlecodes)

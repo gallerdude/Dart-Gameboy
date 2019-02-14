@@ -44,11 +44,19 @@ class Gameboy
 		registers = [a, b, c, d, e, f, h, l];
 
 		cpu = new CPU(memory, program_counter, registers);
+		startupsequence();
 
 	}
 
 	void startupsequence()
 	{
 		print("PC: " + program_counter.toString());
+		memory.write(19,0x105);
+		print(memory.read(0x105));
+		print(memory.read(0x106));
+		print(memory.read(0x107));
+		print(memory.read(0x108));
+		print(memory.read(0x109));
+		print(5);
 	}
 }
